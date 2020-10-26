@@ -77,18 +77,22 @@ describe('createRouter', () => {
 
     it('parses single and multiple request parameters and passes them down', async () => {
       const response = await request(app).get(
-        '/entities?filter=a=1,a=,a=3,b=4&filter=c=',
+        '/entities?filter=a=1,a=2,b=3&filter=c=4',
       );
 
       expect(response.status).toEqual(200);
       expect(entitiesCatalog.entities).toHaveBeenCalledTimes(1);
-      expect(entitiesCatalog.entities).toHaveBeenCalledWith([
-        {
-          a: ['1', null, '3'],
-          b: ['4'],
-        },
-        { c: [null] },
-      ]);
+      expect(entitiesCatalog.entities).toHaveBeenCalledWith({
+        anyOf: [
+          {
+            allOf: [
+              { key: 'a', matchValueIn: ['1', '2'] },
+              { key: 'b', matchValueIn: ['3'] },
+            ],
+          },
+          { allOf: [{ key: 'c', matchValueIn: ['4'] }] },
+        ],
+      });
     });
   });
 
